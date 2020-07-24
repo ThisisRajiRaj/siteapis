@@ -13,6 +13,7 @@ using System.Text;
 using System.Net.Http;
 using Microsoft.Extensions.Configuration;
 using System.IO;
+using System.Linq;
 
 namespace Rajirajcom.Api
 {
@@ -59,21 +60,43 @@ namespace Rajirajcom.Api
             }
             SyndicationFeed feed = GetFeed(context);
             List<Index> indices = await GetIndices(response);
+
+            indices.Sort((a, b) => (
+                DateTime.Parse(b.date).CompareTo(DateTime.Parse(a.date))
+            ));
+            List<Index> filtered = FilterToMax(context, indices);
+            await GetFeedItem(context, feed, filtered);
+            return GetFeedResult(feed);
+        }
+
+        private static List<Index> FilterToMax(ExecutionContext context,
+        List<Index> indices)
+        {
+            int max = Int32.Parse(GetAppSettingOrDefault(context, "maxitems","10"));
+            List<Index> filtered = new List<Index>();
+            for (int i = 0; i < max; i++)
+            {
+                if (i >= indices.Count) break;
+                filtered.Add(indices[i]);
+            }
+
+            return filtered;
+        }
+
+        private static async Task GetFeedItem(ExecutionContext context, 
+            SyndicationFeed feed, 
+            List<Index> indices)
+        {
             List<SyndicationItem> items = new List<SyndicationItem>();
             for (int i = 0; i < indices.Count; i++)
             {
                 Index index = indices[i];
-                string contentRoot = GetAppSettingOrDefault(context,
-                    "contentfileroot",
-                    ""
-                );
-                items.Add(await GetItem(context, contentRoot, index));
+                items.Add(await GetItem(context, index));
             }
             feed.Items = items;
             feed.Language = GetAppSettingOrDefault(context,
                 "language",
                 "en");
-            return GetFeedResult(feed);
         }
 
         private static IActionResult GetFeedResult(SyndicationFeed feed)
@@ -107,30 +130,37 @@ namespace Rajirajcom.Api
             return indices;
         }
 
-        private static async Task<SyndicationItem> GetItem(ExecutionContext context,
-        string contentFileRoot,
+        private static async Task<SyndicationItem> GetItem(ExecutionContext context,            
             Index index)
         {
             string text = "";
 
-            string link = string.Format("{0}/{1}.txt", contentFileRoot, index.name);
             if (GetAppSettingOrDefault(context, "enablecontent", "0") == "1")
             {
-                HttpResponseMessage resp = await httpClient.GetAsync(link);
+                string filepath = GetAppSettingOrDefault(context, 
+                    "contentfileroot");                    
+                HttpResponseMessage resp = await httpClient.GetAsync(
+                    string.Format("{0}/{1}.txt", filepath, index.name));
                 if (resp.IsSuccessStatusCode)
                 {
                     text = await resp.Content.ReadAsStringAsync();
                 }
             }
             
+            string blogpath = GetAppSettingOrDefault(context, 
+                    "blogURL"); 
+            string link = string.Format("{0}/{1}", blogpath, index.name);
+            var pubDate = DateTime.Parse(index.date).ToUniversalTime();
             SyndicationItem item =
                 new SyndicationItem(
                     index.title,
                     text,
                     new Uri(link),
                     link,
-                    DateTimeOffset.Parse(index.date)                                        
+                    pubDate                               
             );
+            item.Content =  SyndicationContent.CreateHtmlContent(text.Substring(0,2000));
+            item.PublishDate = pubDate;
             return item;
         }
 
