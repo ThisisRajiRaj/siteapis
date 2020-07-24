@@ -1,5 +1,4 @@
 using System;
-using System.IO;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Azure.WebJobs;
@@ -13,9 +12,17 @@ using System.Xml;
 using System.Text;
 using System.Net.Http;
 using Microsoft.Extensions.Configuration;
+using System.IO;
 
 namespace Rajirajcom.Api
 {
+    public class Utf8StringWriter : StringWriter
+    {
+        public override Encoding Encoding
+        {
+            get { return Encoding.UTF8; }
+        }
+    }
     public static class Feed
     {
         ///
@@ -60,17 +67,36 @@ namespace Rajirajcom.Api
                     "contentfileroot",
                     ""
                 );
-                items.Add(await GetItem(contentRoot, index));
+                items.Add(await GetItem(context, contentRoot, index));
             }
             feed.Items = items;
+            feed.Language = GetAppSettingOrDefault(context,
+                "language",
+                "en");
+            return GetFeedResult(feed);
+        }
 
+        private static IActionResult GetFeedResult(SyndicationFeed feed)
+        {
             Rss20FeedFormatter rssFormatter = new Rss20FeedFormatter(feed);
-            var output = new StringBuilder();
-            using (var writer = XmlWriter.Create(output, new XmlWriterSettings { Indent = true }))
+
+            using (TextWriter utf8 = new Utf8StringWriter())
             {
-                rssFormatter.WriteTo(writer);
-                writer.Flush();
-                return new OkObjectResult(output.ToString());
+                using (var writer = XmlWriter.Create(utf8,
+                    new XmlWriterSettings
+                    {
+                        Indent = true,
+                        Encoding = Encoding.GetEncoding("utf-8")
+                    }))
+                {
+                    rssFormatter.WriteTo(writer);
+                    writer.Flush();
+                    return new ContentResult
+                    {
+                        Content = utf8.ToString(),
+                        ContentType = "application/rss+xml"
+                    };
+                }
             }
         }
 
@@ -81,25 +107,29 @@ namespace Rajirajcom.Api
             return indices;
         }
 
-        private static async Task<SyndicationItem> GetItem(string contentFileRoot,
+        private static async Task<SyndicationItem> GetItem(ExecutionContext context,
+        string contentFileRoot,
             Index index)
         {
-            string link = string.Format("{0}/{1}.txt", contentFileRoot, index.name);
-            HttpResponseMessage resp = await httpClient.GetAsync(link);
             string text = "";
-            if (resp.IsSuccessStatusCode)
-            {
-                text = await resp.Content.ReadAsStringAsync();
-                text = text.Substring(0, 200);
-            }
 
+            string link = string.Format("{0}/{1}.txt", contentFileRoot, index.name);
+            if (GetAppSettingOrDefault(context, "enablecontent", "0") == "1")
+            {
+                HttpResponseMessage resp = await httpClient.GetAsync(link);
+                if (resp.IsSuccessStatusCode)
+                {
+                    text = await resp.Content.ReadAsStringAsync();
+                }
+            }
+            
             SyndicationItem item =
                 new SyndicationItem(
                     index.title,
                     text,
                     new Uri(link),
                     link,
-                    DateTime.Now
+                    DateTimeOffset.Parse(index.date)                                        
             );
             return item;
         }
