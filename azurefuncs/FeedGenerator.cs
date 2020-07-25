@@ -109,7 +109,7 @@ namespace Rajirajcom.Api
             {
                 string filepath = config.ContentFileRoot;                    
                 HttpResponseMessage resp = await httpClient.GetAsync(
-                    string.Format("{0}/{1}.txt", filepath, index.Name));
+                    string.Format("{0}/{1}.html", filepath, index.Name));
                 if (resp.IsSuccessStatusCode)
                 {
                     text = await resp.Content.ReadAsStringAsync();

@@ -20,15 +20,17 @@ To run the project, create a local.settings.json file in the folder containing a
 
 ### For using /Feed API
 Feed API is used to generate a RSS feed from your blog site
-Add to the file the following for using the /Feed API:
+Add to the local.settings file the following for using the /Feed API:
 
 Setting name | Setting Value| Default value
 ------------ | -------------| -------------
-title| Title for your RSS feed|empty string 
-description| Description for your RSS feed| empty string 
-language| Language of your RSS feed| en
+rootURL| Root URL of the website| null (this is required)
+blogURL| URL of the blog| null (this is required)
+title| Title for your RSS feed| "Website feed" 
+description| Description for your RSS feed| "This is a generated blog feed" 
+language| Language of your RSS feed| "en"
 indexfilelocation| URL of a json file containing the feed index| null (this is required)
-contentfileroot| Root URL of each feed item| required
+contentfileroot| Root URL of each html post| value of the rootURL
 enablecontent| If the output XML should contain content tag| 0
 maxitems| Max number of items to return | 10
 
@@ -48,12 +50,14 @@ is as in the following example:
     }
  ]
  ```
- In this example, if indexfilelocation is "http://contoso.com/blogindex.json" and contentfileroot 
- is "http://contoso.com/posts", then the following locations should be valid and reachable:
+ In this example, if indexfilelocation is "http://contoso.com/blogindex.json",
+ blogURL is  http://contoso.com/blog, and contentfileroot  is
+ "http://contoso.com/posts", then the following locations should be valid and reachable:
 
- * http://contoso.com/posts/bar
- * http://contoso.com/posts/foo
+ * http://contoso.com/posts/bar.html
+ * http://contoso.com/posts/foo.html
  * http://contoso.com/blogindex.json
+ *  http://contoso.com/blog/foo
 
 ### For using /SendMail API
 SendMail API is used from website contact forms where individuals

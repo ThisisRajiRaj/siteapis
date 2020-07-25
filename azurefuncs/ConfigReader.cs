@@ -2,10 +2,11 @@ using System.Linq;
 using Microsoft.Azure.WebJobs;
 using Microsoft.Extensions.Configuration;
 
-namespace Rajirajcom.Api 
+namespace Rajirajcom.Api
 {
-    public class ConfigReader {
-        
+    public class ConfigReader
+    {
+
         public static string GetAppSettingOrDefault(
             ExecutionContext context,
             string name,
@@ -16,13 +17,18 @@ namespace Rajirajcom.Api
                            .AddJsonFile("local.settings.json", optional: true, reloadOnChange: true)
                            .AddEnvironmentVariables() // <- This is what actually gets you the application settings in Azure
                            .Build();
-                           
-            if (!config.GetChildren().Any (item => item.Key == name) ||
-                config[name] == null && defaultVal == null)
+
+            // If the key doesn't exist of the value is null, throw
+            // error if no default val provided
+            if (!config.GetChildren().Any(item => item.Key == name) ||
+                config[name] == null)
             {
-                throw new System.ApplicationException(
-                    string.Format("Error reading {0} from application settings",name)
-                );
+                if (defaultVal == null)
+                {
+                    throw new System.ApplicationException(
+                        string.Format("Error reading {0} from application settings", name)
+                    );
+                }
             }
             return config[name] ?? defaultVal;
         }
