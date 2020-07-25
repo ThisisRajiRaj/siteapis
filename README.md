@@ -62,7 +62,7 @@ Add to the file the following for using the /SendMail API:
 
 Setting name | Setting Value| Default value
 ------------ | -------------| -------------
-emailfrom| Email address of who the email should be sent from. This typically is the website owner email.| null (this is required)
+emailfrom| Email address of who the email should be sent from. This typically is the website owner email| null (this is required)
 fromname| Name of who the email should be sent from. This typically is the website owner email.| null (this is required)
 emailto| Who the email should be sent to.  This typically is the website owner email.| emailfrom value
 toname| Name of who the email should be sent to. This typically is the website owner email.| fromname value
@@ -93,6 +93,14 @@ E.g.
 cd into the azurefuncs_test folder, and run:
 
 `` dotnet test``
+
+## Running the application
+cd into the azurefuncs folder, and run:
+
+`` dotnet run ``
+
+If you are using VSCode, simply hit Run -> Start 
+Debugging (F5 on Windows) from the menu to debug.
 
 ## Deploying to Azure using VSCode
 Once you have built, updated local.settings.json, tested locally, now it's

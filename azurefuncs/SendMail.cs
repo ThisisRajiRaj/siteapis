@@ -1,5 +1,6 @@
 using System;
 using System.IO;
+using System.Net;
 using System.Threading.Tasks;
 using System.Web.Http;
 using Microsoft.AspNetCore.Mvc;
@@ -40,8 +41,8 @@ namespace Rajirajcom.Api
                  fromName,
                  fromEmail,
                  msg);
-                var result = Execute(context, fullMsg, devflag ?? "true");
-                return new OkObjectResult("Success");
+                string result = await Execute(context, fullMsg, devflag ?? "true");
+                return new OkObjectResult("Returned with " + result);
             }
             catch (Exception e)
             {                
@@ -73,7 +74,9 @@ namespace Rajirajcom.Api
             var email = MailHelper.CreateSingleEmail(from, to, subject, msg, "");
             if (shldNotSend == "true") return "success";
             var res = await client.SendEmailAsync(email);
-            return res.Body.ToString();
+            if (res.StatusCode != HttpStatusCode.OK && res.StatusCode != HttpStatusCode.Accepted)
+                throw new ApplicationException("Error sending email " + res.StatusCode);
+            return res.StatusCode.ToString();
         }
     }
 }

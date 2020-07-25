@@ -1,4 +1,4 @@
-using System;
+using System.Linq;
 using Microsoft.Azure.WebJobs;
 using Microsoft.Extensions.Configuration;
 
@@ -16,9 +16,11 @@ namespace Rajirajcom.Api
                            .AddJsonFile("local.settings.json", optional: true, reloadOnChange: true)
                            .AddEnvironmentVariables() // <- This is what actually gets you the application settings in Azure
                            .Build();
-            if (config[name] == null && defaultVal == null)
+                           
+            if (!config.GetChildren().Any (item => item.Key == name) ||
+                config[name] == null && defaultVal == null)
             {
-                throw new ApplicationException(
+                throw new System.ApplicationException(
                     string.Format("Error reading {0} from application settings",name)
                 );
             }

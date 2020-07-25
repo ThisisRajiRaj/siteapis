@@ -21,7 +21,7 @@ namespace Rajirajcom.Api
                 "title",
                 "New email from " + EmailFrom);
             SendGridApiKey = ConfigReader.GetAppSettingOrDefault (context,
-                "sendgridappkey",
+                "sendgridapikey",
                 null);
         }
 
