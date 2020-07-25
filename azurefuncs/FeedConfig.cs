@@ -55,7 +55,9 @@ namespace Rajirajcom.Api
                            .Build();
             if (config[name] == null && defaultVal == null)
             {
-                throw new ApplicationException();
+                throw new ApplicationException(
+                    string.Format("Error reading {0} from application settings",name)
+                );
             }
             return config[name] ?? defaultVal;
         }

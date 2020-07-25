@@ -22,7 +22,6 @@ namespace Rajirajcom.Api
         {
             try
             {
-                log.LogInformation("C# HTTP trigger function processed a request.");
                 string requestBody = await new StreamReader(req.Body).ReadToEndAsync();
                 dynamic data = JsonConvert.DeserializeObject(requestBody);
                 if (data == null)
