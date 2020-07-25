@@ -18,16 +18,17 @@ namespace Rajirajcom.Api
         [FunctionName("SendMail")]
         public static async Task<IActionResult> Run(
             [HttpTrigger(AuthorizationLevel.Function, "get", "post", Route = null)] HttpRequest req,
+            ExecutionContext context,
             ILogger log)
         {
             try
-            {
+            {                
                 string requestBody = await new StreamReader(req.Body).ReadToEndAsync();
                 dynamic data = JsonConvert.DeserializeObject(requestBody);
                 if (data == null)
                 {
                     throw new ApplicationException(
-                        "JSON object must be passed in: "
+                        "JSON object must be passed in"
                     );
                 }
                 var fromName = data?.from;
@@ -39,27 +40,29 @@ namespace Rajirajcom.Api
                  fromName,
                  fromEmail,
                  msg);
-                var result = Execute(fullMsg, devflag.ToString() ?? "true");
+                var result = Execute(context, fullMsg, devflag ?? "true");
                 return new OkObjectResult("Success");
             }
             catch (Exception e)
-            {
-                string msg = $"Failed to send email with subject " +
-                              "'{email.Subject}' to Administrator";
-                log.LogError(e.ToString());
+            {                
                 return new ExceptionResult(e, true);
             }
         }
 
-        static async Task<string> Execute(string msg, string devflag)
+        static async Task<string> Execute(
+            ExecutionContext context,
+            string msg, 
+            dynamic devflag)
         {
-            var apiKey = "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";
+            SendMaildConfig config = new SendMaildConfig(context);
+            var shldNotSend = devflag.ToString();
+            var apiKey = config.SendGridApiKEy;
             var client = new SendGridClient(apiKey);
-            var subject = "RajiRaj.com Contact Form ";
-            var to = new EmailAddress("rajigopal@gmail.com", "Raji Rajagopalan");
-            var from = new EmailAddress("rajigopal@gmail.com", "Raji Rajagopalan");
+            var subject = config.EmailSubject;
+            var to = new EmailAddress(config.EmailTo, config.FromName);
+            var from = new EmailAddress(config.EmailFrom, config.ToName);
             var email = MailHelper.CreateSingleEmail(from, to, subject, msg, "");
-            if (devflag == "true") return "success";
+            if (shldNotSend == "true") return "success";
             var res = await client.SendEmailAsync(email);
             return res.Body.ToString();
             

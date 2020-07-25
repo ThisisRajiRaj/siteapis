@@ -1,7 +1,5 @@
 using System;
-using Microsoft.Extensions.Configuration;
 using Microsoft.Azure.WebJobs;
-
 
 namespace Rajirajcom.Api
 {
@@ -19,47 +17,30 @@ namespace Rajirajcom.Api
 
         public FeedConfig(ExecutionContext context)
         {
-            RootUrl = GetAppSettingOrDefault(context, "rootURL", null);
-            BlogUrl = GetAppSettingOrDefault(context, "blogURL", null);
-            Title = GetAppSettingOrDefault(context,
+            RootUrl = ConfigReader.GetAppSettingOrDefault(context, "rootURL", null);
+            BlogUrl = ConfigReader.GetAppSettingOrDefault(context, "blogURL", null);
+            Title = ConfigReader.GetAppSettingOrDefault(context,
                 "title",
                 "Website feed");
-            Description = GetAppSettingOrDefault(context,
+            Description = ConfigReader.GetAppSettingOrDefault(context,
                 "description",
                 "This is a generated blog feed");
-            Language = GetAppSettingOrDefault(context,
+            Language = ConfigReader.GetAppSettingOrDefault(context,
                 "language",
                 "en");
-            IndexFileLocation = GetAppSettingOrDefault(context,
+            IndexFileLocation = ConfigReader.GetAppSettingOrDefault(context,
                 "indexfilelocation",
                 null);
-            ContentFileRoot = GetAppSettingOrDefault(context,
+            ContentFileRoot = ConfigReader.GetAppSettingOrDefault(context,
                 "contentfileroot",
                 RootUrl);
-            MaxItems = Int32.Parse(GetAppSettingOrDefault(context, "maxitems","10"));
+            MaxItems = Int32.Parse(
+                ConfigReader.GetAppSettingOrDefault(context, "maxitems","10")
+            );
             EnableContent = 
-                (GetAppSettingOrDefault(context, "enablecontent", "0") == "0" )
+                (ConfigReader.GetAppSettingOrDefault(context, "enablecontent", "0") == "0" )
                 ? false 
                 : true;
-        }
-
-        private string GetAppSettingOrDefault(
-            ExecutionContext context,
-            string name,
-            string defaultVal = "")
-        {
-            var config = new ConfigurationBuilder()
-                           .SetBasePath(context.FunctionAppDirectory)
-                           .AddJsonFile("local.settings.json", optional: true, reloadOnChange: true)
-                           .AddEnvironmentVariables() // <- This is what actually gets you the application settings in Azure
-                           .Build();
-            if (config[name] == null && defaultVal == null)
-            {
-                throw new ApplicationException(
-                    string.Format("Error reading {0} from application settings",name)
-                );
-            }
-            return config[name] ?? defaultVal;
         }
 
     }
