@@ -1,12 +1,13 @@
-# RSS Azure Function implementation of RSS Feed Generetor for a site
+
+# Common Azure Fuctions needed to support a personal website
 This project implements backend Azure Function API for common website tasks
 like blog feed generation, contact form that sends an email to an owner etc.
 
 
-** Pre-requisites: ** You need to have .netcore 3.1 installed 
-
 ## Setting up the project locally
 `` git clone https://github.com/thisisrajiraj/sites ``
+
+** Pre-requisites: ** You need to have .netcore 3.1 installed 
 
 Then cd into the folder containing azurefuncs.csproj. Run:
 
@@ -17,7 +18,7 @@ Then cd into the folder containing azurefuncs.csproj. Run:
 ## Running the project
 To run the project, create a local.settings.json file in the folder containing azurefuncs.csproj.
 
-### /Feed API
+### For using /Feed API
 Feed API is used to generate a RSS feed from your blog site
 Add to the file the following for using the /Feed API:
 
@@ -54,7 +55,7 @@ is as in the following example:
  * http://contoso.com/posts/foo
  * http://contoso.com/blogindex.json
 
-### /SendMail API
+### For using /SendMail API
 SendMail API is used from website contact forms where individuals
 want to contact the website owners.
 Add to the file the following for using the /SendMail API:
@@ -88,7 +89,10 @@ E.g.
     "message":"Hello world"
 }
 ```
+## Running tests
+cd into the azurefuncs_test folder, and run:
 
+`` dotnet test``
 
 ## Deploying to Azure using VSCode
 Once you have built, updated local.settings.json, tested locally, now it's
