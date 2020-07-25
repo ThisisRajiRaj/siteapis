@@ -67,7 +67,7 @@ fromname| Name of who the email should be sent from. This typically is the websi
 emailto| Who the email should be sent to.  This typically is the website owner email.| emailfrom value
 toname| Name of who the email should be sent to. This typically is the website owner email.| fromname value
 emailsubject| Subject of the email| "New email from &lt;emailfrom&gt;
-sendgridappkey| API key from send grid. You SendGrid dev API key | empty (this is required)
+sendgridapikey| API key from send grid. You SendGrid dev API key | empty (this is required)
 
 SendMail uses SendGrid API to send email. Please make sure you 
 have a [SendGrid] (https://sendgrid.com/) account and configure it right.
@@ -95,9 +95,6 @@ cd into the azurefuncs_test folder, and run:
 `` dotnet test``
 
 ## Running the application
-cd into the azurefuncs folder, and run:
-
-`` dotnet run ``
 
 If you are using VSCode, simply hit Run -> Start 
 Debugging (F5 on Windows) from the menu to debug.
