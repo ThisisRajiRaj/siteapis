@@ -3,7 +3,7 @@ using Microsoft.Azure.WebJobs;
 
 namespace Rajirajcom.Api
 {
-    class FeedConfig
+    public class FeedConfig
     {
         public int MaxItems { get; set; }
         public string RootUrl { get; set; }
@@ -15,6 +15,10 @@ namespace Rajirajcom.Api
         public string ContentFileRoot { get; set; }
         public bool EnableContent { get; set; }
 
+        public FeedConfig()
+        {
+            // For testing. Create an empty object
+        }
         public FeedConfig(ExecutionContext context)
         {
             RootUrl = ConfigReader.GetAppSettingOrDefault(context, "rootURL", null);

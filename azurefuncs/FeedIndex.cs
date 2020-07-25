@@ -2,7 +2,7 @@ using Newtonsoft.Json;
 
 namespace Rajirajcom.Api
 {
-    class FeedIndex
+    public class FeedIndex
     {
         [JsonProperty(PropertyName = "name")]
         public string Name { get; set; }

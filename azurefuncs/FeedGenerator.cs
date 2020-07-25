@@ -13,8 +13,9 @@ using System.IO;
 
 namespace Rajirajcom.Api
 {
-    class FeedGenerator
+    public class FeedGenerator
     {   private static HttpClient httpClient = new HttpClient();
+        private static readonly int MAX_CONTENT_LENGTH = 2000;
         private FeedConfig config;
         public FeedGenerator(FeedConfig config)
         {
@@ -126,7 +127,13 @@ namespace Rajirajcom.Api
                     link,
                     pubDate                               
             );
-            item.Content =  SyndicationContent.CreateHtmlContent(text.Substring(0,2000));
+
+            if (config.EnableContent) {
+                string substr = text.Length > MAX_CONTENT_LENGTH 
+                    ? text.Substring(0,MAX_CONTENT_LENGTH)
+                    : text;
+                item.Content =  SyndicationContent.CreateHtmlContent(substr);
+            }
             item.PublishDate = pubDate;
             return item;
         }

@@ -3,15 +3,15 @@ using Microsoft.Azure.WebJobs;
 
 namespace Rajirajcom.Api
 {
-    class SendMaildConfig
+    public class SendMailConfig
     {
         public string FromName {get; set;}
         public string ToName {get; set;}
         public string EmailFrom { get; set; }
         public string EmailTo { get; set; }
         public string EmailSubject { get; set; }
-        public string SendGridApiKEy { get; set; }
-        public SendMaildConfig(ExecutionContext context)
+        public string SendGridApiKey { get; set; }
+        public SendMailConfig(ExecutionContext context)
         {
             FromName = ConfigReader.GetAppSettingOrDefault(context, "fromname", null);
             ToName = ConfigReader.GetAppSettingOrDefault(context, "toname", FromName);
@@ -20,7 +20,7 @@ namespace Rajirajcom.Api
             EmailSubject = ConfigReader.GetAppSettingOrDefault(context,
                 "title",
                 "New email from " + EmailFrom);
-            SendGridApiKEy = ConfigReader.GetAppSettingOrDefault (context,
+            SendGridApiKey = ConfigReader.GetAppSettingOrDefault (context,
                 "sendgridappkey",
                 null);
         }

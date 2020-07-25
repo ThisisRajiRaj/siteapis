@@ -54,10 +54,19 @@ namespace Rajirajcom.Api
             string msg, 
             dynamic devflag)
         {
-            SendMaildConfig config = new SendMaildConfig(context);
-            var shldNotSend = devflag.ToString();
-            var apiKey = config.SendGridApiKEy;
+            SendMailConfig config = new SendMailConfig(context);
+            var apiKey = config.SendGridApiKey;
             var client = new SendGridClient(apiKey);
+            return await GetEmailContent(msg, devflag, config, client);
+        }
+
+        private static async Task<string> GetEmailContent(
+            string msg, 
+            dynamic devflag, 
+            SendMailConfig config, 
+            SendGridClient client)
+        {
+            var shldNotSend = devflag.ToString();
             var subject = config.EmailSubject;
             var to = new EmailAddress(config.EmailTo, config.FromName);
             var from = new EmailAddress(config.EmailFrom, config.ToName);
@@ -65,7 +74,6 @@ namespace Rajirajcom.Api
             if (shldNotSend == "true") return "success";
             var res = await client.SendEmailAsync(email);
             return res.Body.ToString();
-            
         }
     }
 }
