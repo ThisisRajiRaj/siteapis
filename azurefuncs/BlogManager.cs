@@ -38,6 +38,9 @@ namespace Rajirajcom.Api
             string storageConnectionString,
             ExecutionContext context)
         {
+            // Flesh out the blog content path 
+            GetBlogContentPath(blogInfo, context);
+            
             // Store all info in a single container
             BlobContainerClient container = new BlobContainerClient(
                 storageConnectionString,
@@ -80,6 +83,17 @@ namespace Rajirajcom.Api
             ExecutionContext context, 
             BlobClient blob)
         {
+            // Store the file URL for blog in the blob content
+            byte[] fileURL = Encoding.Unicode.GetBytes(blogInfo.Path);
+            using (MemoryStream ms = new MemoryStream(fileURL))
+            {
+                await blob.UploadAsync(ms);
+            }
+        }
+
+        private static void GetBlogContentPath(BlogInfo blogInfo, 
+        ExecutionContext context)
+        {
             if (blogInfo.Path == null)
             {
                 string pagesRootURL = ConfigReader.GetAppSettingOrDefault(context,
@@ -92,15 +106,8 @@ namespace Rajirajcom.Api
                         "Pass in a file path URL in the request to add it");
                 }
                 blogInfo.Path = ConfigReader.GetFileContentURL(
-                   pagesRootURL, 
-                   blogInfo.Name); 
-            }
-
-            // Store the file URL for blog in the blob content
-            byte[] fileURL = Encoding.Unicode.GetBytes(blogInfo.Path);
-            using (MemoryStream ms = new MemoryStream(fileURL))
-            {
-                await blob.UploadAsync(ms);
+                   pagesRootURL,
+                   blogInfo.Name);
             }
         }
 
