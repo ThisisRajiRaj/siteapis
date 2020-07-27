@@ -93,6 +93,35 @@ E.g.
     "message":"Hello world"
 }
 ```
+### For using /MinsToRead API
+MinsToRead returns the approximate number of mins needed
+to read an article. 
+
+Add to the local.settings file the following for using the API:
+Setting name | Setting Value| Default value
+------------ | -------------| -------------
+contentfileroot| Root URL where posts can be fetched from | If not set, pass in JSON body to request
+azurestorageconnstring| Connection string to Azure Blog storage account | null (this is required)
+
+Parameters to /SendMail should be sent as a JSON body. Parameters needed include:
+Setting name | Setting Value
+------------ | -------------
+name| Unique name of the blog
+fileurl| Entire URL to get the blog content from. Can be left out if contentfileroot is configured.
+
+E.g.
+``` json
+{
+    "name":"foo"
+}
+```
+
+In this example, if contentfileroot  is
+ "http://contoso.com/posts", and then the following locations should be valid and reachable:
+
+ * http://contoso.com/posts/foo.html
+
+
 ## Running tests
 cd into the azurefuncs_test folder, and run:
 

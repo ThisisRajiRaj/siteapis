@@ -6,7 +6,6 @@ namespace Rajirajcom.Api
 {
     public class ConfigReader
     {
-
         public static string GetAppSettingOrDefault(
             ExecutionContext context,
             string name,
@@ -33,6 +32,14 @@ namespace Rajirajcom.Api
             return config[name] ?? defaultVal;
         }
 
+        public static string GetFileContentURL(
+            string pagesRootURL,
+            string filename)
+        {
+            return string.Format("{0}/{1}.html",
+               pagesRootURL,
+               filename);
+        }
     }
 
 }

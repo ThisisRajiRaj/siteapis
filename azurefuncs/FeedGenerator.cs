@@ -1,7 +1,6 @@
 using System;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Http;
 using System.ServiceModel.Syndication;
 using Newtonsoft.Json;
 using System.Collections.Generic;
@@ -14,7 +13,8 @@ using System.IO;
 namespace Rajirajcom.Api
 {
     public class FeedGenerator
-    {   private static HttpClient httpClient = new HttpClient();
+    {   
+        private static HttpClient httpClient = new HttpClient();
         private static readonly int MAX_CONTENT_LENGTH = 2000;
         private FeedConfig config;
         public FeedGenerator(FeedConfig config)
@@ -107,9 +107,11 @@ namespace Rajirajcom.Api
             string text = "";
             if (config.EnableContent)
             {
-                string filepath = config.ContentFileRoot;                    
-                HttpResponseMessage resp = await httpClient.GetAsync(
-                    string.Format("{0}/{1}.html", filepath, index.Name));
+                string filepath = ConfigReader.GetFileContentURL(
+                    config.ContentFileRoot,
+                    index.Name
+                );
+                HttpResponseMessage resp = await httpClient.GetAsync(filepath);
                 if (resp.IsSuccessStatusCode)
                 {
                     text = await resp.Content.ReadAsStringAsync();
