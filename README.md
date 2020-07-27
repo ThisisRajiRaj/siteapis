@@ -30,7 +30,7 @@ title| Title for your RSS feed| "Website feed"
 description| Description for your RSS feed| "This is a generated blog feed" 
 language| Language of your RSS feed| "en"
 indexfilelocation| URL of a json file containing the feed index| null (this is required)
-contentfileroot| Root URL of each html post| value of the rootURL
+contentfileroot| Root URL of each html post| (this is required)
 enablecontent| If the output XML should contain content tag| 0
 maxitems| Max number of items to return | 10
 
@@ -57,7 +57,8 @@ is as in the following example:
  * http://contoso.com/posts/bar.html
  * http://contoso.com/posts/foo.html
  * http://contoso.com/blogindex.json
- *  http://contoso.com/blog/foo
+ * http://contoso.com/blog/foo
+ * http://contoso.com/blog/bar
 
 ### For using /SendMail API
 SendMail API is used from website contact forms where individuals
