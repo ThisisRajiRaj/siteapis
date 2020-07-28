@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using Azure.Storage.Blobs;
 using Azure.Storage.Blobs.Models;
 using Microsoft.Azure.WebJobs;
+using System.Collections.Generic;
 using System.Net.Http;
 
 namespace Rajirajcom.Api
@@ -14,33 +15,49 @@ namespace Rajirajcom.Api
     {
         private static HttpClient httpClient = new HttpClient();
 
+        public async Task<List<BlogInfo>> GetMinsToRead(List<BlogInfo> blogInfos,
+            string storageConnectionString,
+            string contentFileRoot)
+        {
+            /// <summary>
+            /// Get the list of minstoread for passed in list of
+            /// blog name + file content.
+            /// If metadata for blog doesn't exist in Azure blobs,
+            /// compute and store info
+            /// </summary>
+            List<BlogInfo> toRet = new List<BlogInfo>();
+            foreach (var item in blogInfos)
+            {
+                var mins = await GetMinsToRead(item,
+                        storageConnectionString,
+                        contentFileRoot);
+
+                toRet.Add(new BlogInfo
+                {
+                    Name = item.Name,
+                    MinsToRead = mins
+                });
+            }
+            return toRet;
+        }
+
         /// <summary>
         /// Get minstoread for passed in blog name + file content
         /// If metadata for blog doesn't exist in Azure blobs,
         /// compute and store info
         /// </summary>
-        public async Task<string> GetMinsToRead(string name,
-            string filePath,
+        public async Task<string> GetMinsToRead(BlogInfo blogInfo,
             string storageConnectionString,
-            ExecutionContext context)
+            string contentFileRoot)
         {
-            BlogInfo info = new BlogInfo
+            if (blogInfo.Name == null)
             {
-                Name = name,
-                Path = filePath
-            };
-            return await AddMinsToRead(info,
-                storageConnectionString,
-                context);
-        }
-
-        private async Task<string> AddMinsToRead(BlogInfo blogInfo,
-            string storageConnectionString,
-            ExecutionContext context)
-        {
+                throw new ApplicationException(
+                    "Pass in a unique blogname in the list of names.");
+            }
             // Flesh out the blog content path 
-            GetBlogContentPath(blogInfo, context);
-            
+            GetBlogContentPath(blogInfo, contentFileRoot);
+
             // Store all info in a single container
             BlobContainerClient container = new BlobContainerClient(
                 storageConnectionString,
@@ -53,7 +70,7 @@ namespace Rajirajcom.Api
             bool blobExists = blob.Exists();
             if (!blobExists)
             {
-                await CreateNewBlog(blogInfo, context, blob);
+                await CreateNewBlog(blogInfo, blob);
             }
 
             // Return pre-computed content if info already
@@ -80,7 +97,6 @@ namespace Rajirajcom.Api
         }
 
         private static async Task CreateNewBlog(BlogInfo blogInfo,
-            ExecutionContext context, 
             BlobClient blob)
         {
             // Store the file URL for blog in the blob content
@@ -91,22 +107,19 @@ namespace Rajirajcom.Api
             }
         }
 
-        private static void GetBlogContentPath(BlogInfo blogInfo, 
-        ExecutionContext context)
+        private static void GetBlogContentPath(BlogInfo blogInfo,            
+            string contentFileRoot)
         {
             if (blogInfo.Path == null)
             {
-                string pagesRootURL = ConfigReader.GetAppSettingOrDefault(context,
-                    "contentfileroot",
-                    "");
-                if (pagesRootURL == "")
+                if (contentFileRoot == "")
                 {
                     throw new ApplicationException(
                         "Info with this blog name doesn't exist. " +
                         "Pass in a file path URL in the request to add it");
                 }
                 blogInfo.Path = ConfigReader.GetFileContentURL(
-                   pagesRootURL,
+                   contentFileRoot,
                    blogInfo.Name);
             }
         }

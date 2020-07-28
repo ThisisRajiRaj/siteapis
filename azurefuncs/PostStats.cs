@@ -8,53 +8,67 @@ using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
 using System.Web.Http;
 using System.IO;
+using System.Collections.Generic;
+using Newtonsoft.Json.Linq;
 
 namespace Rajirajcom.Api
 {
+    ///
+    /// An Azure function to get stats about articles from their
+    /// path
+    ///
     public static partial class PostStats
     {
+        ///
+        /// An API to return an array containing Minutes-to-read article
+        /// stats for passed in array of article names.
+        /// 
         [FunctionName("MinsToRead")]
         public static async Task<IActionResult> Run(
-            [HttpTrigger(AuthorizationLevel.Anonymous, "get", "post", Route = null)] HttpRequest req,
+            [HttpTrigger(AuthorizationLevel.Function, "get", "post", Route = null)] HttpRequest req,
             ExecutionContext context,
             ILogger log)
         {
-            try {
-                string requestBody = await new StreamReader(req.Body).ReadToEndAsync();
-                dynamic data = JsonConvert.DeserializeObject(requestBody);
-                if (data == null)
-                {
-                    throw new ApplicationException(
-                        "JSON object must be passed in"
-                    );
-                }
-                var name = data?.name;
-                var fileurl = data?.fileurl;
-
-                if (name == null)
-                {
-                    throw new ApplicationException(
-                        "Pass in a unique blogname.");
-                }
-                
+            try
+            {
+                JArray reqBodyData = await GetRequest(req);
                 string connString = ConfigReader.GetAppSettingOrDefault(
-                    context, 
+                    context,
                     "azurestorageconnstring",
                     null
+                ); string contentFileRoot = ConfigReader.GetAppSettingOrDefault(
+                    context,
+                    "contentfileroot",
+                    null
                 );
+
                 BlogManager bm = new BlogManager();
-                var mins = await bm.GetMinsToRead((string)name, 
-                    (string)fileurl, 
+
+                List<BlogInfo> reqData = reqBodyData.ToObject<List<BlogInfo>>();
+                List<BlogInfo> toRet = await bm.GetMinsToRead(reqData,
                     connString,
-                    context);
-
-                return new ObjectResult(mins);
-
+                    contentFileRoot);
+                return new OkObjectResult(toRet);
             }
             catch (Exception e)
             {
-                return new ExceptionResult(e,true);
+                return new ExceptionResult(e, true);
             }
         }
+
+        private static async Task<JArray> GetRequest(HttpRequest req)
+        {
+            string requestBody = await new StreamReader(req.Body).ReadToEndAsync();
+            if (typeof(JArray).IsAssignableFrom(requestBody.GetType()))
+            {
+                throw new ApplicationException(
+                    @"Pass in a json array with ""name"" and ""fileurl"" properties."
+                );
+            }
+
+            JArray reqBodyData = (JArray)JsonConvert.DeserializeObject(requestBody);
+            return reqBodyData;
+        }
+
     }
 }
