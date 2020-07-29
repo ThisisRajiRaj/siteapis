@@ -133,8 +133,9 @@ namespace Rajirajcom.Api
                 StringSplitOptions.RemoveEmptyEntries
             );
 
-            // average reading speed is 300 per min
-            return (int)Math.Round(words.Length / 300.0);
+            // average reading speed is 300 per min + 
+            // a few more to account HTML tags
+            return (int)Math.Round(words.Length / 400.0);
         }
     }
 }
