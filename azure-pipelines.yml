@@ -8,7 +8,7 @@ trigger:
 
 variables:
   # Azure Resource Manager connection created during pipeline creation
-  azureSubscription: '2f1bd2c9-b7a6-4a3b-aa23-9bd9c4f18a3c'
+  azureSubscription: 'Visual Studio Enterprise Subscription'
 
   # Function app name
   functionAppName: 'rajirajcomapi'
