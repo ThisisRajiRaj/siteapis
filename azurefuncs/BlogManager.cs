@@ -42,13 +42,62 @@ namespace Rajirajcom.Api
         }
 
         /// <summary>
-        /// Get minstoread for passed in blog name + file content
+        /// Get comments for passed in blog name 
         /// If metadata for blog doesn't exist in Azure blobs,
         /// compute and store info
         /// </summary>
-        public async Task<string> GetMinsToRead(BlogInfo blogInfo,
+        public async Task<string> GetComments(BlogInfo blogInfo,
             string storageConnectionString,
             string contentFileRoot)
+        {
+            BlobClient blob = await CreateBlogInfoIfNotExists(blogInfo, contentFileRoot, storageConnectionString);         
+
+            string comments = blogInfo.Comments;
+            // Return pre-computed content if info already
+            // exists in the blog
+            BlobProperties props = await blob.GetPropertiesAsync();
+            if (props.Metadata.ContainsKey("comments"))
+            {
+                string oldComments = 
+                    Encoding.UTF8.GetString(Convert.FromBase64String(props.Metadata["comments"]));
+                comments += oldComments;
+            }
+            
+            props.Metadata["comments"] = Convert.ToBase64String(Encoding.UTF8.GetBytes(comments));;
+            blob.SetMetadata(props.Metadata);
+            return comments;
+        }
+
+        /// <summary>
+        /// Add a like for passed in blog name 
+        /// If metadata for blog doesn't exist in Azure blobs,
+        /// compute and store info
+        /// </summary>
+        public async Task<int> AddLike(BlogInfo blogInfo,
+            string storageConnectionString,
+            string contentFileRoot)
+        {
+            BlobClient blob = await CreateBlogInfoIfNotExists(blogInfo, contentFileRoot, storageConnectionString);
+            
+            int currentLike = blogInfo.Likes;
+            // Return pre-computed content if info already
+            // exists in the blog
+            BlobProperties props = await blob.GetPropertiesAsync();
+            if (props.Metadata.ContainsKey("likes"))
+            {
+                var oldLikes = Int32.Parse(props.Metadata["likes"]);
+                currentLike += oldLikes;
+            }
+            
+            props.Metadata["likes"] = currentLike.ToString();
+            blob.SetMetadata(props.Metadata);
+            return currentLike;
+        }
+
+        private async Task<BlobClient> CreateBlogInfoIfNotExists(
+            BlogInfo blogInfo, 
+            string contentFileRoot,
+            string storageConnectionString)
         {
             if (blogInfo.Name == null)
             {
@@ -72,6 +121,41 @@ namespace Rajirajcom.Api
             {
                 await CreateNewBlog(blogInfo, blob);
             }
+            return blob;
+        }
+
+        /// Get Metadata for a blog 
+        /// If metadata for blog doesn't exist in Azure blobs,
+        /// compute and store info
+        /// </summary>
+        public async Task<BlogInfo> GetBlogMetadata(BlogInfo info,
+            string storageConnectionString,
+            string contentFileRoot)
+        {
+            BlobClient blob = await CreateBlogInfoIfNotExists(info, contentFileRoot, storageConnectionString);         
+
+            // Return pre-computed content if info already
+            // exists in the blog
+            BlobProperties props = await blob.GetPropertiesAsync();
+            if (props.Metadata.ContainsKey("comments")) {
+                info.Comments = 
+                    Encoding.UTF8.GetString(Convert.FromBase64String(props.Metadata["comments"]));
+            }
+            info.Likes = Int32.Parse(props.Metadata["likes"]);
+            info.MinsToRead = props.Metadata["minsToRead"];
+            return info;
+        }
+
+        /// <summary>
+        /// Get minstoread for passed in blog name + file content
+        /// If metadata for blog doesn't exist in Azure blobs,
+        /// compute and store info
+        /// </summary>
+        public async Task<string> GetMinsToRead(BlogInfo blogInfo,
+            string storageConnectionString,
+            string contentFileRoot)
+        {
+            BlobClient blob = await CreateBlogInfoIfNotExists(blogInfo, contentFileRoot, storageConnectionString);         
 
             // Return pre-computed content if info already
             // exists in the blog

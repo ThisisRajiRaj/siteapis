@@ -13,5 +13,12 @@ namespace Rajirajcom.Api
 
         [JsonProperty("minstoread")]
         public string MinsToRead { get; set; }
+        
+        [JsonProperty("comments")]
+        public string Comments { get; set; }
+
+                
+        [JsonProperty("likes")]
+        public int Likes { get; set; }
     }
 }
