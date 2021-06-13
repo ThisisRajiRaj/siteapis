@@ -3,11 +3,32 @@
 This project implements backend Azure Function API for common website tasks
 like blog feed generation, contact form that sends an email to an owner etc.
 
+# Setting up to run locally
+Install all prerequisites mentioned [here](https://docs.microsoft.com/en-us/azure/azure-functions/functions-develop-vs-code?tabs=csharp):
+- Azure Functions Tools
+- .Net Core CLI Tools
+- C# Extension
+
+Make sure the local.settings.json file contains the following to allow CORS:
+
+```
+{
+  "IsEncrypted": false,
+  "Values": {
+  },
+  "Host": {
+        "LocalHttpPort": 7071,
+        "CORS": "*",
+        "CORSCredentials": false
+      }
+}
+```
 
 ## Setting up the project locally
 `` git clone https://github.com/thisisrajiraj/sites ``
 
 ** Pre-requisites: ** You need to have .netcore 3.1 installed 
+
 
 Then cd into the folder containing azurefuncs.csproj. Run:
 
@@ -104,7 +125,7 @@ Setting name | Setting Value| Default value
 contentfileroot| Root URL where posts can be fetched from | If not set, pass in JSON body to request
 azurestorageconnstring| Connection string to Azure Blog storage account | null (this is required)
 
-Parameters to /SendMail should be sent as a JSON body. Parameters needed include:
+Parameters to /MinsToRead should be sent as a JSON body. Parameters needed include:
 Setting name | Setting Value
 ------------ | -------------
 name| Unique name of the blog
@@ -123,6 +144,78 @@ In this example, if contentfileroot  is
  * http://contoso.com/posts/foo.html
 
 
+### For using /GetBlogMetadata API
+GetBlogMetadata returns the metadata on a blog (minstoread, comments, likes, name). Returns 
+a BlogInfo object that includes the metadata above.
+
+Add to the local.settings file the following for using the API:
+Setting name | Setting Value| Default value
+------------ | -------------| -------------
+contentfileroot| Root URL where posts can be fetched from | If not set, pass in JSON body to request
+azurestorageconnstring| Connection string to Azure Blog storage account | null (this is required)
+
+Parameters to /GetBlogMetadata should be sent as a JSON body. Parameters needed include:
+Setting name | Setting Value
+------------ | -------------
+name| Unique name of the blog
+
+E.g.
+``` json
+{
+    "name":"foo"
+}
+```
+http://contoso.com/posts/foo.html
+
+
+
+### For using /Comments API
+Comments API adds any comments passed in comments and
+returns a string that contains the passed in comments + the old comments in storage
+
+Add to the local.settings file the following for using the API:
+Setting name | Setting Value| Default value
+------------ | -------------| -------------
+contentfileroot| Root URL where posts can be fetched from | If not set, pass in JSON body to request
+azurestorageconnstring| Connection string to Azure Blog storage account | null (this is required)
+
+Parameters to /Comments should be sent as a JSON body. Parameters needed include:
+Setting name | Setting Value
+------------ | -------------
+name| Unique name of the blog
+
+E.g.
+``` json
+{
+    "name":"foo",
+    "comments":"This is a comment. If you want the comment to be concatenated with some newlines, add HTML newlines at the end like so &lt;br/&gt;"
+}
+```
+
+
+### For using /Likes API
+Likes API adds or decrements passed in 
+number of likes from what already exists. The API will stop at 
+0 so like count doesn't go negative. Retuns the current Like count as an int.
+
+Add to the local.settings file the following for using the API:
+Setting name | Setting Value| Default value
+------------ | -------------| -------------
+contentfileroot| Root URL where posts can be fetched from | If not set, pass in JSON body to request
+azurestorageconnstring| Connection string to Azure Blog storage account | null (this is required)
+
+Parameters to /Comments should be sent as a JSON body. Parameters needed include:
+Setting name | Setting Value
+------------ | -------------
+name| Unique name of the blog
+
+E.g.
+``` json
+{
+    "name":"foo",
+    "comments":"This is a comment. If you want the comment to be concatenated with some newlines, add HTML newlines at the end like so &lt;br/&gt;"
+}
+```
 ## Running tests
 cd into the azurefuncs_test folder, and run:
 

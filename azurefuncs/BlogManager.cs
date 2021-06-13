@@ -42,11 +42,10 @@ namespace Rajirajcom.Api
         }
 
         /// <summary>
-        /// Get comments for passed in blog name 
-        /// If metadata for blog doesn't exist in Azure blobs,
-        /// compute and store info
+        /// Get and prepend passed in comments for passed in blog name 
+        /// 
         /// </summary>
-        public async Task<string> GetComments(BlogInfo blogInfo,
+        public async Task<string> Comments(BlogInfo blogInfo,
             string storageConnectionString,
             string contentFileRoot)
         {
@@ -60,9 +59,16 @@ namespace Rajirajcom.Api
             {
                 string oldComments = 
                     Encoding.UTF8.GetString(Convert.FromBase64String(props.Metadata["comments"]));
-                comments += oldComments;
+                if (comments != null) { 
+                    comments += oldComments;
+                }
+                else {
+                    comments = oldComments;
+                }
             }
             
+            if (comments == null)
+                return null;
             props.Metadata["comments"] = Convert.ToBase64String(Encoding.UTF8.GetBytes(comments));;
             blob.SetMetadata(props.Metadata);
             return comments;
@@ -70,10 +76,10 @@ namespace Rajirajcom.Api
 
         /// <summary>
         /// Add a like for passed in blog name 
-        /// If metadata for blog doesn't exist in Azure blobs,
-        /// compute and store info
+        /// Client can pass in a -ve and +ve number to increase or
+        /// decrease like count
         /// </summary>
-        public async Task<int> AddLike(BlogInfo blogInfo,
+        public async Task<int> Likes(BlogInfo blogInfo,
             string storageConnectionString,
             string contentFileRoot)
         {
@@ -89,44 +95,17 @@ namespace Rajirajcom.Api
                 currentLike += oldLikes;
             }
             
+            if (currentLike < 0) {
+                currentLike = 0;
+            }
             props.Metadata["likes"] = currentLike.ToString();
             blob.SetMetadata(props.Metadata);
             return currentLike;
         }
 
-        private async Task<BlobClient> CreateBlogInfoIfNotExists(
-            BlogInfo blogInfo, 
-            string contentFileRoot,
-            string storageConnectionString)
-        {
-            if (blogInfo.Name == null)
-            {
-                throw new ApplicationException(
-                    "Pass in a unique blogname in the list of names.");
-            }
-            // Flesh out the blog content path 
-            GetBlogContentPath(blogInfo, contentFileRoot);
 
-            // Store all info in a single container
-            BlobContainerClient container = new BlobContainerClient(
-                storageConnectionString,
-                "bloginfo");
-            container.CreateIfNotExists();
-
-            // create a new blob with the name and store
-            // all metadata for the blob in that name
-            BlobClient blob = container.GetBlobClient(blogInfo.Name);
-            bool blobExists = blob.Exists();
-            if (!blobExists)
-            {
-                await CreateNewBlog(blogInfo, blob);
-            }
-            return blob;
-        }
-
-        /// Get Metadata for a blog 
-        /// If metadata for blog doesn't exist in Azure blobs,
-        /// compute and store info
+        /// <summary>
+        /// Get existing metadata for a blog 
         /// </summary>
         public async Task<BlogInfo> GetBlogMetadata(BlogInfo info,
             string storageConnectionString,
@@ -141,8 +120,13 @@ namespace Rajirajcom.Api
                 info.Comments = 
                     Encoding.UTF8.GetString(Convert.FromBase64String(props.Metadata["comments"]));
             }
-            info.Likes = Int32.Parse(props.Metadata["likes"]);
-            info.MinsToRead = props.Metadata["minsToRead"];
+            if (props.Metadata.ContainsKey("likes")) {
+                info.Likes = Int32.Parse(props.Metadata["likes"]);
+            }
+            
+            if (props.Metadata.ContainsKey("minsToRead")) {
+                info.MinsToRead = props.Metadata["minsToRead"];
+            }
             return info;
         }
 
@@ -178,6 +162,59 @@ namespace Rajirajcom.Api
             props.Metadata.Add("minsToRead", mins.ToString());
             blob.SetMetadata(props.Metadata);
             return mins.ToString();
+        }
+
+
+        private async Task<BlobClient> CreateBlogInfoIfNotExists(
+            BlogInfo blogInfo, 
+            string contentFileRoot,
+            string storageConnectionString)
+        {
+            if (blogInfo.Name == null)
+            {
+                throw new ApplicationException(
+                    "Pass in a unique blogname in the list of names.");
+            }
+            // Flesh out the blog content path 
+            GetBlogContentPath(blogInfo, contentFileRoot);
+
+            // Store all info in a single container
+            BlobContainerClient container = new BlobContainerClient(
+                storageConnectionString,
+                "bloginfo");
+            container.CreateIfNotExists();
+
+            // create a new blob with the name and store
+            // all metadata for the blob in that name
+            BlobClient blob = container.GetBlobClient(blogInfo.Name);
+            bool blobExists = blob.Exists();
+            if (!blobExists)
+            {
+                await CreateNewBlog(blogInfo, blob);
+            }
+            return blob;
+        }
+
+        public async Task<bool> DeleteBlogIfExists(
+            BlogInfo blogInfo,
+            string storageConnectionString)
+        {
+            if (blogInfo.Name == null)
+            {
+                throw new ApplicationException(
+                    "Pass in a unique blogname in the list of names.");
+            }
+
+            // Store all info in a single container
+            BlobContainerClient container = new BlobContainerClient(
+                storageConnectionString,
+                "bloginfo");
+
+            // create a new blob with the name and store
+            // all metadata for the blob in that name
+            BlobClient blob = container.GetBlobClient(blogInfo.Name);
+            
+            return await blob.DeleteIfExistsAsync();
         }
 
         private static async Task CreateNewBlog(BlogInfo blogInfo,

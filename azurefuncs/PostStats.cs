@@ -36,7 +36,8 @@ namespace Rajirajcom.Api
                     context,
                     "azurestorageconnstring",
                     null
-                ); string contentFileRoot = ConfigReader.GetAppSettingOrDefault(
+                ); 
+                string contentFileRoot = ConfigReader.GetAppSettingOrDefault(
                     context,
                     "contentfileroot",
                     null
@@ -118,7 +119,7 @@ namespace Rajirajcom.Api
                 BlogManager bm = new BlogManager();
 
                 BlogInfo reqData = reqBodyData.ToObject<BlogInfo>();
-                int toRet = await bm.AddLike(reqData,
+                int toRet = await bm.Likes(reqData,
                     connString,
                     contentFileRoot);
                 return new OkObjectResult(toRet);
@@ -155,7 +156,7 @@ namespace Rajirajcom.Api
                 BlogManager bm = new BlogManager();
 
                 BlogInfo reqData = reqBodyData.ToObject<BlogInfo>();
-                string toRet = await bm.GetComments(reqData,
+                string toRet = await bm.Comments(reqData,
                     connString,
                     contentFileRoot);
                 return new OkObjectResult(toRet);
