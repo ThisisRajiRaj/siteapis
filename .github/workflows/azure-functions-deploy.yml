@@ -39,13 +39,13 @@ jobs:
           dotnet build --configuration Release --output ./output
           popd
 
-      - name: Run Azure Functions Action
+      - name: Deploy to Staging (push)
+        if: ${{ github.event_name == 'push' }}
         uses: Azure/functions-action@v1
-        id: fa
         with:
           app-name: ${{ env.AZURE_FUNCTIONAPP_NAME }}
           package: "${{ env.AZURE_FUNCTIONAPP_PACKAGE_PATH }}/output"
-          publish-profile: ${{ secrets.AZURE_FUNCTIONAPP_PUBLISH_PROFILE }}
+          publish-profile: ${{ secrets.AZURE_FUNCTIONAPP_PUBLISH_PROFILE_STAGING }}
           slot-name: "staging"
 
       - name: Deploy to Staging (manual)
