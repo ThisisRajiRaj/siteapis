@@ -1,0 +1,66 @@
+name: Deploy DotNet project to Azure Function App
+
+on:
+  push:
+    branches: ["master"]
+  workflow_dispatch:
+    inputs:
+      deploy_target:
+        description: "Choose deployment target"
+        required: true
+        default: "staging"
+        type: choice
+        options:
+          - staging
+          - production
+
+env:
+  AZURE_FUNCTIONAPP_NAME: "rajirajcomapi"
+  AZURE_FUNCTIONAPP_PACKAGE_PATH: "azurefuncs"
+  DOTNET_VERSION: "3.1.x"
+
+jobs:
+  build-and-deploy:
+    runs-on: windows-latest
+    environment: dev
+    steps:
+      - name: Checkout GitHub Action
+        uses: actions/checkout@v4
+
+      - name: Setup DotNet ${{ env.DOTNET_VERSION }} Environment
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: ${{ env.DOTNET_VERSION }}
+
+      - name: Resolve Project Dependencies Using Dotnet
+        shell: pwsh
+        run: |
+          pushd "./${{ env.AZURE_FUNCTIONAPP_PACKAGE_PATH }}"
+          dotnet build --configuration Release --output ./output
+          popd
+
+      - name: Run Azure Functions Action
+        uses: Azure/functions-action@v1
+        id: fa
+        with:
+          app-name: ${{ env.AZURE_FUNCTIONAPP_NAME }}
+          package: "${{ env.AZURE_FUNCTIONAPP_PACKAGE_PATH }}/output"
+          publish-profile: ${{ secrets.AZURE_FUNCTIONAPP_PUBLISH_PROFILE }}
+          slot-name: "staging"
+
+      - name: Deploy to Staging (manual)
+        if: ${{ github.event_name == 'workflow_dispatch' && inputs.deploy_target == 'staging' }}
+        uses: Azure/functions-action@v1
+        with:
+          app-name: ${{ env.AZURE_FUNCTIONAPP_NAME }}
+          package: "${{ env.AZURE_FUNCTIONAPP_PACKAGE_PATH }}/output"
+          publish-profile: ${{ secrets.AZURE_FUNCTIONAPP_PUBLISH_PROFILE_STAGING }}
+          slot-name: "staging"
+
+      - name: Deploy to Production (manual)
+        if: ${{ github.event_name == 'workflow_dispatch' && inputs.deploy_target == 'production' }}
+        uses: Azure/functions-action@v1
+        with:
+          app-name: ${{ env.AZURE_FUNCTIONAPP_NAME }}
+          package: "${{ env.AZURE_FUNCTIONAPP_PACKAGE_PATH }}/output"
+          publish-profile: ${{ secrets.AZURE_FUNCTIONAPP_PUBLISH_PROFILE_PROD }}

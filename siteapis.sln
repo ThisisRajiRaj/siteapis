@@ -1,0 +1,35 @@
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.5.2.0
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "azurefuncs", "azurefuncs\azurefuncs.csproj", "{A299A2E2-0A1C-DAFB-54E9-5C2035F4EE9C}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "azurefuncs_test", "azurefuncs_test", "{AF700A86-C5F8-930D-68CD-3D9D1C9D68BB}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "test", "azurefuncs_test\test.csproj", "{8986018D-256D-B3F8-35CF-47F788B1E44B}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{A299A2E2-0A1C-DAFB-54E9-5C2035F4EE9C}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{A299A2E2-0A1C-DAFB-54E9-5C2035F4EE9C}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{A299A2E2-0A1C-DAFB-54E9-5C2035F4EE9C}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{A299A2E2-0A1C-DAFB-54E9-5C2035F4EE9C}.Release|Any CPU.Build.0 = Release|Any CPU
+		{8986018D-256D-B3F8-35CF-47F788B1E44B}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{8986018D-256D-B3F8-35CF-47F788B1E44B}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{8986018D-256D-B3F8-35CF-47F788B1E44B}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{8986018D-256D-B3F8-35CF-47F788B1E44B}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{8986018D-256D-B3F8-35CF-47F788B1E44B} = {AF700A86-C5F8-930D-68CD-3D9D1C9D68BB}
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {9823D1B2-73A7-4DD9-963C-EBEF7CD75018}
+	EndGlobalSection
+EndGlobal
